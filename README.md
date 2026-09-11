@@ -55,7 +55,7 @@ docker compose up -d
 Create a payment:
 
 ```bash
-curl -X POST http://localhost:5000/payments \
+curl -X POST http://localhost:8080/payments \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 3f9a2c1e-0000-0000-0000-000000000001" \
   -d '{
@@ -73,10 +73,10 @@ curl -X POST http://localhost:5000/payments \
 Check its status:
 
 ```bash
-curl http://localhost:5000/payments/[id]
+curl http://localhost:8080/payments/[id]
 ```
 
-Tracing dashboard: http://localhost:5000
+Tracing dashboard: http://localhost:18888
 
 <!-- Verify every command above from a fresh clone before publishing. -->
 

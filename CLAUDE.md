@@ -4,24 +4,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-**No source code exists yet.** The repository currently contains only `README.md` and four ADRs under `docs/adr/`. There is no `.sln`/`.csproj`, no `src/` or `tests/` tree, no Docker Compose file, and no CI workflow, even though the README describes them as if present. Treat the README and ADRs as the approved design spec to implement against, not as a description of existing code.
+The solution is scaffolded (projects, references, packages, Docker Compose, CI) but carries **no domain logic yet** — every project still has default/template contents (`Program.cs`, no controllers, no `DbContext`, no Kafka producers/consumers, no ISO 20022 mapping). Treat the README and ADRs as the design spec to implement against; the code does not yet reflect them.
 
-Because there is no code yet, there are no build/lint/test commands to run. Once the projects are scaffolded, the intended test command (per README) is `dotnet test`; update this file with real commands (including how to run a single test) as soon as the solution exists.
+## Commands
+
+```bash
+dotnet restore
+dotnet build                                   # warnings are errors (Directory.Build.props)
+dotnet test                                    # all three test projects
+dotnet test tests/Payments.Api.Tests           # one test project
+dotnet test --filter "FullyQualifiedName~Name" # one test by name
+```
+
+```bash
+docker compose up -d --build   # postgres, kafka (+ topic init), aspire-dashboard, and the 3 services
+docker compose down -v
+```
+
+`payments-api` is on `http://localhost:8080` (not `:5000` — that port collides with macOS's AirPlay Receiver/ControlCenter, which listens there by default). The OpenTelemetry trace dashboard (Aspire Dashboard) is on `http://localhost:18888`.
+
+Package versions are centrally pinned in `Directory.Packages.props` (Central Package Management) — add a package with `dotnet package add <PackageId> --project <path>` (no `-n`/`--no-restore`, or it writes an unpinned `Version="*"` instead of a resolved version into the central file). `Directory.Build.props` sets `net10.0`/`Nullable`/`ImplicitUsings`/`TreatWarningsAsErrors` for every project — don't repeat those in individual `.csproj` files.
 
 ## What this project is
 
 A .NET 10 backend ("Payment Gateway (ISO 20022)") that accepts payment orders over REST, turns them into signed ISO 20022 `pain.001` files, sends them to a simulated bank, and tracks each payment to its final status. It exists to demonstrate reliable messaging patterns in a payments context: transactional outbox, idempotent consumers, and retries over Kafka.
 
-Intended service topology (see README "Project structure"):
+Service topology (see README "Project structure"):
 
 ```text
 src/
-  Payments.Api/          REST API, domain model, outbox
-  BankGateway.Worker/    Kafka consumer, ISO 20022 mapping and signing
-  MockBank/              Simulated bank with configurable failures
-  Contracts/             Shared event contracts
+  Payments.Api/          REST API, domain model, outbox      (webapi, + Dockerfile)
+  BankGateway.Worker/    Kafka consumer, ISO 20022, signing   (worker, + Dockerfile)
+  MockBank/              Simulated bank                       (webapi, + Dockerfile)
+  Contracts/             Shared event contracts                (classlib)
 tests/
-  [test projects]
+  Payments.Api.Tests/          unit — IBAN validation, state transitions
+  BankGateway.Worker.Tests/    unit — pain.001 mapping, XSD validation
+  Integration.Tests/           Testcontainers (Postgres, Kafka) + Mvc.Testing; E2E lives here too, trait-tagged
+schemas/                 ISO 20022 XSDs — not checked in yet, see schemas/README.md
 ```
 
 Flow: Client → `POST /payments` (with `Idempotency-Key`) → Payments API writes payment + outbox record in one DB transaction → outbox relay publishes to Kafka (`payment-events`, keyed by payment ID) → BankGateway.Worker maps to signed `pain.001`, sends to MockBank → MockBank returns `pain.002` → Worker publishes to `bank-status-events` → API updates payment status.
