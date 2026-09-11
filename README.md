@@ -1,6 +1,6 @@
 # Payment Gateway (ISO 20022)
 
-[![CI](https://github.com/[username]/[repo]/actions/workflows/ci.yml/badge.svg)](https://github.com/[username]/[repo]/actions/workflows/ci.yml)
+[![CI](https://github.com/dnk89/simple-banking/actions/workflows/ci.yml/badge.svg)](https://github.com/dnk89/simple-banking/actions/workflows/ci.yml)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 

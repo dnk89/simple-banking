@@ -41,7 +41,7 @@ tests/
   Payments.Api.Tests/          unit — IBAN validation, state transitions
   BankGateway.Worker.Tests/    unit — pain.001 mapping, XSD validation
   Integration.Tests/           Testcontainers (Postgres, Kafka) + Mvc.Testing; E2E lives here too, trait-tagged
-schemas/                 ISO 20022 XSDs — not checked in yet, see schemas/README.md
+docs/xsd/                ISO 20022 XSDs: pain.001.001.13.xsd, pain.002.001.15.xsd
 ```
 
 Flow: Client → `POST /payments` (with `Idempotency-Key`) → Payments API writes payment + outbox record in one DB transaction → outbox relay publishes to Kafka (`payment-events`, keyed by payment ID) → BankGateway.Worker maps to signed `pain.001`, sends to MockBank → MockBank returns `pain.002` → Worker publishes to `bank-status-events` → API updates payment status.
