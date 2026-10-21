@@ -1,6 +1,6 @@
-@MockBank_HostAddress = http://localhost:5255
+@MockBank_HostAddress = http://localhost:8081
 
-GET {{MockBank_HostAddress}}/weatherforecast/
+GET {{MockBank_HostAddress}}/openapi/v1.json
 Accept: application/json
 
 ###

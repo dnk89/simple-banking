@@ -1,6 +1,6 @@
-@Payments.Api_HostAddress = http://localhost:5113
+@Payments.Api_HostAddress = http://localhost:8080
 
-GET {{Payments.Api_HostAddress}}/weatherforecast/
+GET {{Payments.Api_HostAddress}}/openapi/v1.json
 Accept: application/json
 
 ###
