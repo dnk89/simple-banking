@@ -7,7 +7,11 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__Payments": "Host=localhost;Database=payments;Username=payments;Password=payments",
+        "Kafka__BootstrapServers": "localhost:9094",
+        "Auth__ApiKeys__0__ClientId": "dev-client",
+        "Auth__ApiKeys__0__Key": "dev-api-key"
       }
     }
   }

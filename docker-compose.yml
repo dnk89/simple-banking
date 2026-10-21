@@ -70,6 +70,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Payments: Host=postgres;Database=payments;Username=payments;Password=payments
       Kafka__BootstrapServers: kafka:9092
+      Auth__ApiKeys__0__ClientId: dev-client
+      Auth__ApiKeys__0__Key: dev-api-key
       OTEL_SERVICE_NAME: payments-api
       OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
     ports:
