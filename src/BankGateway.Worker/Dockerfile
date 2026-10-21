@@ -5,10 +5,12 @@ WORKDIR /src
 COPY Directory.Build.props Directory.Packages.props ./
 COPY src/BankGateway.Worker/BankGateway.Worker.csproj src/BankGateway.Worker/
 COPY src/Contracts/Contracts.csproj src/Contracts/
+COPY src/Messaging/Messaging.csproj src/Messaging/
 RUN dotnet restore src/BankGateway.Worker/BankGateway.Worker.csproj
 
 COPY src/BankGateway.Worker/ src/BankGateway.Worker/
 COPY src/Contracts/ src/Contracts/
+COPY src/Messaging/ src/Messaging/
 RUN dotnet publish src/BankGateway.Worker/BankGateway.Worker.csproj -c Release --no-restore -o /app
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final

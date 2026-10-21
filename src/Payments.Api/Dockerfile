@@ -5,10 +5,12 @@ WORKDIR /src
 COPY Directory.Build.props Directory.Packages.props ./
 COPY src/Payments.Api/Payments.Api.csproj src/Payments.Api/
 COPY src/Contracts/Contracts.csproj src/Contracts/
+COPY src/Messaging/Messaging.csproj src/Messaging/
 RUN dotnet restore src/Payments.Api/Payments.Api.csproj
 
 COPY src/Payments.Api/ src/Payments.Api/
 COPY src/Contracts/ src/Contracts/
+COPY src/Messaging/ src/Messaging/
 RUN dotnet publish src/Payments.Api/Payments.Api.csproj -c Release --no-restore -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
