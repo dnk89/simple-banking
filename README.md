@@ -113,6 +113,8 @@ stateDiagram-v2
 - [ADR-003: Domain model in the API, ISO 20022 only in the bank adapter](docs/adr/003-iso20022-adapter.md)
 - [ADR-004: One payment per pain.001 file](docs/adr/004-no-batching.md)
 
+The [implementation roadmap](docs/ROADMAP.md) tracks how these decisions get built, milestone by milestone.
+
 ## Testing
 
 | Level | What it covers |
