@@ -11,7 +11,7 @@ public static class PaymentsOptionsExtensions
         services.AddValidatedOptions<ConnectionStringsOptions>(configuration, ConnectionStringsOptions.SectionName);
         services.AddValidatedOptions<AuthOptions>(configuration, AuthOptions.SectionName);
         services.AddValidatedOptions<IdempotencyOptions>(configuration, IdempotencyOptions.SectionName);
-        services.AddValidatedOptions<DatabaseOptions>(configuration, DatabaseOptions.SectionName);
+        services.AddDatabaseOptions(configuration);
         return services;
     }
 }

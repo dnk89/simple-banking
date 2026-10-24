@@ -1,6 +1,8 @@
+using Messaging.Data;
 using Messaging.Kafka;
 using Messaging.Outbox;
 using Messaging.Retry;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -39,6 +41,22 @@ public static class MessagingOptionsExtensions
     public static IServiceCollection AddRetryOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddValidatedOptions<RetryOptions>(configuration, RetryOptions.SectionName);
+        return services;
+    }
+
+    public static IServiceCollection AddDatabaseOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddValidatedOptions<DatabaseOptions>(configuration, DatabaseOptions.SectionName);
+        return services;
+    }
+
+    /// <summary>
+    /// Runs <typeparamref name="TContext"/>'s migrations at host start, gated on <c>Database:MigrateOnStartup</c>.
+    /// </summary>
+    public static IServiceCollection AddDatabaseMigrations<TContext>(this IServiceCollection services)
+        where TContext : DbContext
+    {
+        services.AddHostedService<DatabaseMigrationService<TContext>>();
         return services;
     }
 }

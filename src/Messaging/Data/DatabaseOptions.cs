@@ -1,4 +1,4 @@
-namespace Payments.Api.Configuration;
+namespace Messaging.Data;
 
 public sealed class DatabaseOptions
 {
