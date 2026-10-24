@@ -12,6 +12,7 @@ public static class WorkerOptionsExtensions
         services.AddValidatedOptions<MockBankOptions>(configuration, MockBankOptions.SectionName);
         services.AddValidatedOptions<SigningOptions>(configuration, SigningOptions.SectionName);
         services.AddValidatedOptions<Iso20022Options>(configuration, Iso20022Options.SectionName);
+        services.AddDatabaseOptions(configuration);
         return services;
     }
 }
