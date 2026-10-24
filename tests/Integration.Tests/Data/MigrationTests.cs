@@ -1,6 +1,7 @@
 using Integration.Tests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using BankGateway.Worker.Data;
 using Payments.Api.Data;
 using Payments.Api.Data.Entities;
 using Payments.Api.Domain;
@@ -15,7 +16,7 @@ public sealed class MigrationTests(PostgresFixture postgres) : IClassFixture<Pos
         await using var db = CreateContext();
         await db.Database.MigrateAsync();
 
-        var tables = await PaymentsSchemaTables();
+        var tables = await SchemaTables("payments");
 
         Assert.Contains("payments", tables);
         Assert.Contains("idempotency_keys", tables);
@@ -55,6 +56,37 @@ public sealed class MigrationTests(PostgresFixture postgres) : IClassFixture<Pos
         Assert.Equal(125.50m, loaded.Amount);
     }
 
+    [Fact]
+    public async Task BankGatewayContext_MigratesOnEmptyDatabase()
+    {
+        await using var db = CreateBankGatewayContext();
+        await db.Database.MigrateAsync();
+
+        var tables = await SchemaTables("bankgateway");
+
+        Assert.Contains("sent_messages", tables);
+        Assert.Contains("received_statuses", tables);
+        Assert.Contains("__EFMigrationsHistory", tables);
+    }
+
+    [Fact]
+    public async Task BothContexts_MigrateIntoOneDatabase_WithSeparateHistoryTables()
+    {
+        await using var payments = CreateContext();
+        await using var bankGateway = CreateBankGatewayContext();
+
+        await payments.Database.MigrateAsync();
+        await bankGateway.Database.MigrateAsync();
+
+        var paymentsTables = await SchemaTables("payments");
+        var bankGatewayTables = await SchemaTables("bankgateway");
+
+        Assert.Contains("payments", paymentsTables);
+        Assert.Contains("sent_messages", bankGatewayTables);
+        Assert.DoesNotContain("sent_messages", paymentsTables);
+        Assert.DoesNotContain("payments", bankGatewayTables);
+    }
+
     private PaymentsDbContext CreateContext()
     {
         var builder = new DbContextOptionsBuilder<PaymentsDbContext>();
@@ -62,13 +94,20 @@ public sealed class MigrationTests(PostgresFixture postgres) : IClassFixture<Pos
         return new PaymentsDbContext(builder.Options);
     }
 
-    private async Task<HashSet<string>> PaymentsSchemaTables()
+    private BankGatewayDbContext CreateBankGatewayContext()
+    {
+        var builder = new DbContextOptionsBuilder<BankGatewayDbContext>();
+        BankGatewayDbContext.ConfigureDatabase(builder, postgres.ConnectionString);
+        return new BankGatewayDbContext(builder.Options);
+    }
+
+    private async Task<HashSet<string>> SchemaTables(string schema)
     {
         await using var connection = new NpgsqlConnection(postgres.ConnectionString);
         await connection.OpenAsync();
 
         await using var command = new NpgsqlCommand(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'payments'", connection);
+            $"SELECT table_name FROM information_schema.tables WHERE table_schema = '{schema}'", connection);
         await using var reader = await command.ExecuteReaderAsync();
 
         var tables = new HashSet<string>();
