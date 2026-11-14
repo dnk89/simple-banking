@@ -8,8 +8,16 @@ using Payments.Api.Domain;
 
 namespace Integration.Tests.Data;
 
-public sealed class MigrationTests(PostgresFixture postgres) : IClassFixture<PostgresFixture>
+[Collection(InfrastructureCollection.Name)]
+public sealed class MigrationTests(InfrastructureFixture infra) : IAsyncLifetime
 {
+
+    private string _connectionString = "";
+
+    public async Task InitializeAsync() => _connectionString = await infra.Postgres.CreateDatabaseAsync();
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     [Fact]
     public async Task PaymentsContext_MigratesOnEmptyDatabase()
     {
@@ -90,20 +98,20 @@ public sealed class MigrationTests(PostgresFixture postgres) : IClassFixture<Pos
     private PaymentsDbContext CreateContext()
     {
         var builder = new DbContextOptionsBuilder<PaymentsDbContext>();
-        PaymentsDbContext.ConfigureDatabase(builder, postgres.ConnectionString);
+        PaymentsDbContext.ConfigureDatabase(builder, _connectionString);
         return new PaymentsDbContext(builder.Options);
     }
 
     private BankGatewayDbContext CreateBankGatewayContext()
     {
         var builder = new DbContextOptionsBuilder<BankGatewayDbContext>();
-        BankGatewayDbContext.ConfigureDatabase(builder, postgres.ConnectionString);
+        BankGatewayDbContext.ConfigureDatabase(builder, _connectionString);
         return new BankGatewayDbContext(builder.Options);
     }
 
     private async Task<HashSet<string>> SchemaTables(string schema)
     {
-        await using var connection = new NpgsqlConnection(postgres.ConnectionString);
+        await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         await using var command = new NpgsqlCommand(

@@ -6,8 +6,16 @@ using Payments.Api.Data;
 
 namespace Integration.Tests.Data;
 
-public sealed class DatabaseMigratorTests(PostgresFixture postgres) : IClassFixture<PostgresFixture>
+[Collection(InfrastructureCollection.Name)]
+public sealed class DatabaseMigratorTests(InfrastructureFixture infra) : IAsyncLifetime
 {
+
+    private string _connectionString = "";
+
+    public async Task InitializeAsync() => _connectionString = await infra.Postgres.CreateDatabaseAsync();
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     [Fact]
     public async Task ConcurrentMigrators_BothComplete_AndNothingIsLeftPending()
     {
@@ -28,7 +36,7 @@ public sealed class DatabaseMigratorTests(PostgresFixture postgres) : IClassFixt
     {
         var services = new ServiceCollection();
         services.AddDbContext<PaymentsDbContext>(options =>
-            PaymentsDbContext.ConfigureDatabase(options, postgres.ConnectionString));
+            PaymentsDbContext.ConfigureDatabase(options, _connectionString));
         return services.BuildServiceProvider();
     }
 }
