@@ -1,4 +1,8 @@
 using Messaging.Configuration;
+using Messaging.Observability;
+using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -8,6 +12,10 @@ using Payments.Api.Data;
 using Payments.Api.Health;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceObservability("payments-api");
+builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddAspNetCoreInstrumentation());
+builder.Services.ConfigureOpenTelemetryMeterProvider(metrics =>
+    metrics.AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel"));
 
 builder.Services.AddKafkaOptions(builder.Configuration);
 builder.Services.AddOutboxOptions(builder.Configuration);

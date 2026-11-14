@@ -1,10 +1,12 @@
 using BankGateway.Worker.Configuration;
 using BankGateway.Worker.Data;
 using Messaging.Configuration;
+using Messaging.Observability;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.AddServiceObservability("bankgateway-worker");
 
 builder.Services.AddKafkaOptions(builder.Configuration);
 builder.Services.AddOutboxOptions(builder.Configuration);
